@@ -117,6 +117,66 @@
 
       ! ----------------------------------------------------------------
 
+      subroutine fp_get_string_from_file(file_path, output_string)
+      implicit none
+      character(len=*), intent(in) :: file_path
+      character(len=*), intent(out) :: output_string
+      integer :: unit_num, ios, file_len
+      logical :: exists
+      character(len=1000) :: line
+
+      ! The input string saved in the file expected in multiple lines. We read all lines and concatenate them.
+      ! Sanitation check
+      inquire(file=file_path, exist=exists)
+      if (.not. exists) then
+        write(*,*) "Error: File not found - ", trim(file_path)
+        output_string = ''
+        return
+      end if
+
+      ! Identify the file length
+      open(newunit=unit_num, file=trim(file_path), status='old', 
+     &                                        action='read', iostat=ios)
+      if (ios /= 0) then
+        write(*,*) "Error: Unable to open file - ", trim(file_path)
+        output_string = ''
+        return
+      end if
+      file_len = 0
+      do
+        read(unit_num, '(A)', iostat=ios) output_string
+        if (ios /= 0) exit
+        file_len = file_len + len_trim(output_string)
+      end do
+      close(unit_num)
+
+      ! Read the file content again to get the full string
+      open(newunit=unit_num, file=trim(file_path), status='old',
+     &                                        action='read', iostat=ios)
+      if (ios /= 0) then
+        write(*,*) "Error: Unable to open file - ", trim(file_path)
+        output_string = ''
+        return
+      end if
+      output_string = ''
+      do
+        
+        read(unit_num, '(A)', iostat=ios) line
+        if (ios /= 0) exit
+        output_string = trim(output_string) // trim(line)
+      end do
+      close(unit_num)
+
+      ! Verbose of the read string
+      write(*,*) "Verbose from fp_get_string_from_file:"
+      write(*,*) "  Successfully read from file: ", trim(file_path)
+      write(*,*) "  Read expression from file: ", trim(output_string)
+      
+      return
+      end subroutine fp_get_string_from_file
+
+      ! ----------------------------------------------------------------
+
       function to_lowercase(str) result(lower_str)
       implicit none
       character(len=*), intent(in) :: str
@@ -351,6 +411,47 @@
 
       return 
       end subroutine fp_extract_expression_and_variable_definitions
+
+      ! ----------------------------------------------------------------
+
+      subroutine fp_set_variable_value(var_name, var_value)
+      implicit none
+      character(len=*), intent(in) :: var_name
+      real(kind=dp), intent(in) :: var_value
+      integer(kind=int32) :: i
+      logical :: found
+      found = .false.
+      ! Check if var_name is a known variable
+      do i = 1, size(fp_known_variables)
+        if (trim(var_name) == trim(fp_known_variables(i))) then
+          fp_known_variables_values(i) = var_value
+          found = .true.
+          exit
+        end if
+      end do
+      ! If not known variable, check if it's already a user-defined variable
+      if (.not. found) then
+        do i = 1, fp_num_user_defined_variables
+          if (trim(var_name) == 
+     &        trim(fp_user_defined_variables(i))) then
+            fp_user_defined_variables_values(i) = var_value
+            found = .true.
+            exit
+          end if
+        end do
+      end if
+      ! If still not found, add as new user-defined variable
+      if (.not. found) then
+        fp_num_user_defined_variables = 
+     &                                 fp_num_user_defined_variables + 1
+        fp_user_defined_variables(fp_num_user_defined_variables) = 
+     &                                                    trim(var_name)
+        fp_user_defined_variables_values(
+     &                        fp_num_user_defined_variables) = var_value
+      end if
+
+      return 
+      end subroutine fp_set_variable_value
 
       ! ----------------------------------------------------------------
 
