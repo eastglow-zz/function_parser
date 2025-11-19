@@ -14,5 +14,11 @@
 
       call fp_tokenization(trim(math_expression))
       call fp_print_tokens()
+      call fp_infix_to_postfix()
+      write(*,*) "Postfix notation:"
+      call fp_print_tokens()
+      write(*,*) "Evaluating the expression..."
+      write(*,*) "Result: ", fp_evaluate_postfix()
+      
 
       end program main 
