@@ -177,7 +177,7 @@
 
       ! ----------------------------------------------------------------
 
-      function to_lowercase(str) result(lower_str)
+      function fp_to_lowercase(str) result(lower_str)
       implicit none
       character(len=*), intent(in) :: str
       character(len=len(str)) :: lower_str
@@ -190,7 +190,7 @@
           lower_str(i:i) = char(ic + ichar('a') - ichar('A'))
         end if
       end do
-      end function to_lowercase
+      end function fp_to_lowercase
 
       ! ----------------------------------------------------------------
 
@@ -227,7 +227,7 @@
      &          (fp_reserved_tokens(j)(1:1) >= 'A' .and.
      &           fp_reserved_tokens(j)(1:1) <= 'Z')) then
               ! Alphabetic - case-insensitive
-              if (to_lowercase(expression(i:i+token_len-1)) == 
+              if (fp_to_lowercase(expression(i:i+token_len-1)) == 
      &            trim(fp_reserved_tokens(j))) then
                 num_tokens = num_tokens + 1
                 fp_token_stack(num_tokens) = trim(fp_reserved_tokens(j))
@@ -305,7 +305,7 @@
      &                (fp_reserved_tokens(j)(1:1) >= 'A' .and.
      &                 fp_reserved_tokens(j)(1:1) <= 'Z')) then
                     ! Alphabetic - case-insensitive
-                    if (to_lowercase(expression(i:i+token_len-1)) == 
+                    if (fp_to_lowercase(expression(i:i+token_len-1)) == 
      &                  trim(fp_reserved_tokens(j))) then
                       is_operator = .true.
                       exit
