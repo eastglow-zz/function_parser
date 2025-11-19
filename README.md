@@ -13,6 +13,129 @@ This is a minimal Fortran library for parsing and evaluating mathematical functi
 - User-defined variables with inline definitions
 - Built-in constants (pi, e, R)
 
+## Installation
+To compile the library, use the provided Makefile:
+```
+make main
+```
+This will generate an executable named `main.exe`.
+
+## Usage
+
+### Basic Usage
+The library provides a simple interface through the `fp_evaluate` function:
+
+```fortran
+program example
+  use function_parser
+  implicit none 
+  character(len=100) :: expr
+  real(kind=real64) :: result
+  
+  expr = "3.5 + 2.1 * 4"
+  result = fp_evaluate(trim(expr))
+  write(*,*) "Result: ", result
+end program example
+```
+
+### Reading Expressions from a File
+You can read mathematical expressions from a text file using `fp_get_string_from_file`:
+
+```fortran
+program example
+  use function_parser
+  implicit none 
+  character(len=1000) :: expr
+  real(kind=real64) :: result
+  
+  ! Read expression from file
+  call fp_get_string_from_file("./math_exp.txt", expr)
+  
+  ! Evaluate the expression
+  result = fp_evaluate(trim(expr))
+  write(*,*) "Result: ", result
+end program example
+```
+
+**Notes:**
+- The file can contain multiple lines; they will be concatenated into a single expression
+- The subroutine provides verbose output showing the file path and expression read
+- If the file is not found or cannot be opened, an error message is displayed and an empty string is returned
+
+### Setting Variables from Code
+You can set variable values programmatically using `fp_set_variable_value` before evaluating an expression:
+
+```fortran
+program example
+  use function_parser
+  implicit none 
+  character(len=100) :: expr
+  real(kind=real64) :: result
+  
+  ! Set variable values from code
+  call fp_set_variable_value("x", 5.0_dp)
+  call fp_set_variable_value("y", 3.0_dp)
+  call fp_set_variable_value("myvar", 10.5_dp)
+  
+  ! Evaluate expression using the set variables
+  expr = "x**2 + y**2 + myvar"
+  result = fp_evaluate(trim(expr))
+  write(*,*) "Result: ", result  ! 25 + 9 + 10.5 = 44.5
+end program example
+```
+
+**Notes:**
+- Works with both built-in variables (`x`, `y`, `z`, `t`, `r`, `theta`, `phi`, `T`, `P`) and user-defined variables
+- If the variable doesn't exist, it will be created automatically
+- Variable names are case-sensitive
+- This method is useful when variable values are computed or come from other parts of your program
+
+### Variable Definitions (Inline)
+You can also define variables inline within the expression using square brackets. Both formats are supported:
+
+```
+[var1=value1, var2=value2] expression
+```
+or
+```
+expression [var1=value1, var2=value2]
+```
+
+**Examples:**
+```
+[myvar1=23, myvar2=22] myvar1*myvar2
+myvar1*myvar2 [myvar1=23, myvar2=22]
+x + y [x=3, y=2]
+```
+
+### Scientific Notation
+Numbers can be expressed in scientific notation:
+```
+1E-9        (0.000000001)
+2.5E3       (2500.0)
+-1.5E-2     (-0.015)
+```
+
+### Unary Operators
+Unary plus and minus are supported:
+```
+-5 + 3      (-2)
+3 * -2      (-6)
+(-5 + 3) * 2  (-4)
+5 - -3      (8)
+```
+
+### Complex Expressions
+```
+exp(-200000/R/1000)
+sin(pi/4) + cos(pi/4)
+sqrt(x**2 + y**2) [x=3, y=4]
+SINH(1) + COSH(1)         # Case-insensitive functions
+gamma(5)                  # Gamma(5) = 4! = 24
+log10(1000) + LN(e)       # Mixed case works: 3 + 1 = 4
+[r=-10] r + R             # Case-sensitive variables: -10 + 8.314
+```
+
 ## List of Supported Operators and Functions
 ### Operators
 - Addition: `+`
@@ -80,77 +203,6 @@ This is a minimal Fortran library for parsing and evaluating mathematical functi
 
 The following variables are available and can be set using variable definitions:
 - `x`, `y`, `z`, `t`, `r`, `theta`, `phi`, `T`, `P`
-
-## Installation
-To compile the library, use the provided Makefile:
-```
-make main
-```
-This will generate an executable named `main.exe`.
-
-## Usage
-
-### Basic Usage
-The library provides a simple interface through the `fp_evaluate` function:
-
-```fortran
-program example
-  use function_parser
-  implicit none 
-  character(len=100) :: expr
-  real(kind=real64) :: result
-  
-  expr = "3.5 + 2.1 * 4"
-  result = fp_evaluate(trim(expr))
-  write(*,*) "Result: ", result
-end program example
-```
-
-### Variable Definitions
-You can define variables inline using square brackets. Both formats are supported:
-
-```
-[var1=value1, var2=value2] expression
-```
-or
-```
-expression [var1=value1, var2=value2]
-```
-
-**Examples:**
-```
-[myvar1=23, myvar2=22] myvar1*myvar2
-myvar1*myvar2 [myvar1=23, myvar2=22]
-x + y [x=3, y=2]
-```
-
-### Scientific Notation
-Numbers can be expressed in scientific notation:
-```
-1E-9        (0.000000001)
-2.5E3       (2500.0)
--1.5E-2     (-0.015)
-```
-
-### Unary Operators
-Unary plus and minus are supported:
-```
--5 + 3      (-2)
-3 * -2      (-6)
-(-5 + 3) * 2  (-4)
-5 - -3      (8)
-```
-
-### Complex Expressions
-```
-exp(-200000/R/1000)
-sin(pi/4) + cos(pi/4)
-sqrt(x**2 + y**2) [x=3, y=4]
-SINH(1) + COSH(1)         # Case-insensitive functions
-gamma(5)                  # Gamma(5) = 4! = 24
-log10(1000) + LN(e)       # Mixed case works: 3 + 1 = 4
-[r=-10] r + R             # Case-sensitive variables: -10 + 8.314
-```
 
 ## Example
 Here is a simple example of how to use the library:
