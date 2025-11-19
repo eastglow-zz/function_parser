@@ -38,6 +38,11 @@ program example
 end program example
 ```
 
+**Output:**
+```
+Result:    11.900000000000000
+```
+
 ### Reading Expressions from a File
 You can read mathematical expressions from a text file using `fp_get_string_from_file`:
 
@@ -56,6 +61,26 @@ program example
   write(*,*) "Result: ", result
 end program example
 ```
+
+**Example file content (`math_exp.txt`):**
+```
+a + b - c * d
+[
+  a = 10, 
+  b = 5 ,
+  c = 1.,
+  d = -8. 
+]
+```
+
+**Output:**
+```
+ Verbose from fp_get_string_from_file:
+   Successfully read from file: ./math_exp.txt
+   Read expression from file: a + b - c * d[  a = 10,   b = 5 ,  c = 1.,  d = -8. ]
+ Result:    23.000000000000000
+```
+(10 + 5 - 1 × (-8) = 10 + 5 + 8 = 23)
 
 **Notes:**
 - The file can contain multiple lines; they will be concatenated into a single expression
@@ -80,9 +105,15 @@ program example
   ! Evaluate expression using the set variables
   expr = "x**2 + y**2 + myvar"
   result = fp_evaluate(trim(expr))
-  write(*,*) "Result: ", result  ! 25 + 9 + 10.5 = 44.5
+  write(*,*) "Result: ", result
 end program example
 ```
+
+**Output:**
+```
+ Result:    44.500000000000000
+```
+(25 + 9 + 10.5 = 44.5)
 
 **Notes:**
 - Works with both built-in variables (`x`, `y`, `z`, `t`, `r`, `theta`, `phi`, `T`, `P`) and user-defined variables
@@ -103,37 +134,37 @@ expression [var1=value1, var2=value2]
 
 **Examples:**
 ```
-[myvar1=23, myvar2=22] myvar1*myvar2
-myvar1*myvar2 [myvar1=23, myvar2=22]
-x + y [x=3, y=2]
+[myvar1=23, myvar2=22] myvar1*myvar2    → Result: 506
+myvar1*myvar2 [myvar1=23, myvar2=22]    → Result: 506
+x + y [x=3, y=2]                        → Result: 5
 ```
 
 ### Scientific Notation
 Numbers can be expressed in scientific notation:
 ```
-1E-9        (0.000000001)
-2.5E3       (2500.0)
--1.5E-2     (-0.015)
+1E-9        → 0.000000001
+2.5E3       → 2500.0
+-1.5E-2     → -0.015
 ```
 
 ### Unary Operators
 Unary plus and minus are supported:
 ```
--5 + 3      (-2)
-3 * -2      (-6)
-(-5 + 3) * 2  (-4)
-5 - -3      (8)
+-5 + 3          → -2
+3 * -2          → -6
+(-5 + 3) * 2    → -4
+5 - -3          → 8
 ```
 
 ### Complex Expressions
 ```
-exp(-200000/R/1000)
-sin(pi/4) + cos(pi/4)
-sqrt(x**2 + y**2) [x=3, y=4]
-SINH(1) + COSH(1)         # Case-insensitive functions
-gamma(5)                  # Gamma(5) = 4! = 24
-log10(1000) + LN(e)       # Mixed case works: 3 + 1 = 4
-[r=-10] r + R             # Case-sensitive variables: -10 + 8.314
+exp(-200000/R/1000)                 → 3.0865917343815912E-011
+sin(pi/4) + cos(pi/4)               → 1.4142135623730951
+sqrt(x**2 + y**2) [x=3, y=4]        → 5.0
+SINH(1) + COSH(1)                   → 2.7182818284590451 (≈ e)
+gamma(5)                            → 24.0 (4! = 24)
+log10(1000) + LN(e)                 → 4.0 (3 + 1)
+[r=-10] r + R                       → -1.6855373819999997 (-10 + 8.314)
 ```
 
 ## List of Supported Operators and Functions
