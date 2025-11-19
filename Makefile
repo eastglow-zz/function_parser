@@ -1,4 +1,4 @@
-src=src/main.for src/function_parser.for
+src=src/function_parser.for src/main.for 
 FC=gfortran
 FFLAGS=-O2 -Wall
 .PHONY: main clean

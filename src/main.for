@@ -11,14 +11,8 @@
       write(*,*)"Enter a mathematical expression (e.g., 3.5 + 2.1 * 4):"
       read(*,'(A)') math_expression
       write(*,*) "You entered the expression: ", trim(math_expression)
-
-      call fp_tokenization(trim(math_expression))
-      call fp_print_tokens()
-      call fp_infix_to_postfix()
-      write(*,*) "Postfix notation:"
-      call fp_print_tokens()
       write(*,*) "Evaluating the expression..."
-      write(*,*) "Result: ", fp_evaluate_postfix()
+      write(*,*) "Result: ", fp_evaluate(trim(math_expression))
       
 
       end program main 

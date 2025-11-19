@@ -1,10 +1,17 @@
 # function_parser
 
-This is a minimal Fortran library for parsing and evaluating mathematical functions given as strings. It supports basic arithmetic operations, parentheses, and common mathematical functions.
+This is a minimal Fortran library for parsing and evaluating mathematical functions given as strings. It supports basic arithmetic operations, parentheses, common mathematical functions, scientific notation, unary operators, and variable definitions.
+
 ## Features
 - Parse mathematical expressions from strings
 - Evaluate expressions with variable substitution
-- Support for common mathematical functions (sin, cos, exp, log, etc.)
+- Support for 35+ mathematical functions (trigonometric, hyperbolic, logarithmic, special functions)
+- **Case-insensitive function names** (e.g., `SIN`, `sin`, `Sin` all work)
+- **Case-sensitive variable names** (e.g., `x` and `X` are different variables)
+- Scientific notation support (e.g., 1E-9, 2.5E3)
+- Unary operators (+/-)
+- User-defined variables with inline definitions
+- Built-in constants (pi, e, R)
 
 ## List of Supported Operators and Functions
 ### Operators
@@ -13,43 +20,191 @@ This is a minimal Fortran library for parsing and evaluating mathematical functi
 - Multiplication: `*`
 - Division: `/`
 - Exponentiation: `**`
-- Modulus: `mod(a, b)`
+- Unary Plus: `+x`
+- Unary Minus: `-x`
+
 ### Functions
+**Note:** All function names are case-insensitive (e.g., `SIN`, `sin`, `Sin` all work the same).
+
+#### Trigonometric Functions
 - Sine: `sin(x)`
 - Cosine: `cos(x)`
 - Tangent: `tan(x)`
+- Arcsine: `asin(x)`
+- Arccosine: `acos(x)`
+- Arctangent: `atan(x)`
+- Two-argument arctangent: `atan2(y, x)`
+
+#### Hyperbolic Functions
+- Hyperbolic sine: `sinh(x)`
+- Hyperbolic cosine: `cosh(x)`
+- Hyperbolic tangent: `tanh(x)`
+- Inverse hyperbolic sine: `asinh(x)`
+- Inverse hyperbolic cosine: `acosh(x)`
+- Inverse hyperbolic tangent: `atanh(x)`
+
+#### Logarithmic and Exponential Functions
 - Exponential: `exp(x)`
-- Natural Logarithm: `log(x)`
+- Natural logarithm: `log(x)` or `ln(x)`
+- Base-10 logarithm: `log10(x)`
+- Logarithm of gamma function: `log_gamma(x)`
+
+#### Special Functions
+- Gamma function: `gamma(x)`
+- Error function: `erf(x)`
+- Complementary error function: `erfc(x)`
+- Scaled complementary error function: `erfc_scaled(x)`
+- Bessel function J0: `bessel_j0(x)`
+- Bessel function J1: `bessel_j1(x)`
+- Bessel function Jn: `bessel_jn(n, x)` - n must be integer
+- Bessel function Y0: `bessel_y0(x)`
+- Bessel function Y1: `bessel_y1(x)`
+- Bessel function Yn: `bessel_yn(n, x)` - n must be integer
+- Euclidean distance: `hypot(x, y)` - returns sqrt(x²+y²)
+
+#### Other Mathematical Functions
+- Modulus: `mod(a, b)`
 - Minimum: `min(a, b)`
 - Maximum: `max(a, b)`
+- Absolute value: `abs(x)`
+- Square root: `sqrt(x)`
+
 ### Constants
-- Pi: `pi`
-- Euler's Number: `e`
-- Gas Constant: `R`
+**Note:** Constant names are case-sensitive.
+- Pi: `pi` (3.141592653589793)
+- Euler's Number: `e` (2.718281828459045)
+- Gas Constant: `R` (8.314462618)
+
+### Built-in Variables
+**Note:** Variable names are case-sensitive (e.g., `x` and `X` are different variables).
+
+The following variables are available and can be set using variable definitions:
+- `x`, `y`, `z`, `t`, `r`, `theta`, `phi`, `T`, `P`
+
 ## Installation
 To compile the library, use the provided Makefile:
 ```
 make main
 ```
 This will generate an executable named `main.exe`.
+
 ## Usage
-To use the library, include the `function_parser.for` file in your Fortran project and call the provided functions to parse and evaluate expressions.
+
+### Basic Usage
+The library provides a simple interface through the `fp_evaluate` function:
+
+```fortran
+program example
+  use function_parser
+  implicit none 
+  character(len=100) :: expr
+  real(kind=real64) :: result
+  
+  expr = "3.5 + 2.1 * 4"
+  result = fp_evaluate(trim(expr))
+  write(*,*) "Result: ", result
+end program example
+```
+
+### Variable Definitions
+You can define variables inline using square brackets. Both formats are supported:
+
+```
+[var1=value1, var2=value2] expression
+```
+or
+```
+expression [var1=value1, var2=value2]
+```
+
+**Examples:**
+```
+[myvar1=23, myvar2=22] myvar1*myvar2
+myvar1*myvar2 [myvar1=23, myvar2=22]
+x + y [x=3, y=2]
+```
+
+### Scientific Notation
+Numbers can be expressed in scientific notation:
+```
+1E-9        (0.000000001)
+2.5E3       (2500.0)
+-1.5E-2     (-0.015)
+```
+
+### Unary Operators
+Unary plus and minus are supported:
+```
+-5 + 3      (-2)
+3 * -2      (-6)
+(-5 + 3) * 2  (-4)
+5 - -3      (8)
+```
+
+### Complex Expressions
+```
+exp(-200000/R/1000)
+sin(pi/4) + cos(pi/4)
+sqrt(x**2 + y**2) [x=3, y=4]
+SINH(1) + COSH(1)         # Case-insensitive functions
+gamma(5)                  # Gamma(5) = 4! = 24
+log10(1000) + LN(e)       # Mixed case works: 3 + 1 = 4
+[r=-10] r + R             # Case-sensitive variables: -10 + 8.314
+```
+
 ## Example
 Here is a simple example of how to use the library:
 ```fortran
 program test_function_parser
   use function_parser
   implicit none 
-  character(len=100) :: expr
-  real :: result
-  expr = "sin(x) + 2*x^2"
-  call fp_tokenization(trim(expr))
-  call fp_infix_to_postfix()
-  write(*,*) "Evaluating the expression..."
-  write(*,*) "Result: ", fp_evaluate_postfix()
+  character(len=200) :: expr
+  real(kind=real64) :: result
+  
+  ! Simple arithmetic
+  expr = "3.5 + 2.1 * 4"
+  result = fp_evaluate(trim(expr))
+  write(*,*) "Result: ", result  ! 11.9
+  
+  ! With variables (case-sensitive)
+  expr = "[x=5, y=3] x**2 + y**2"
+  result = fp_evaluate(trim(expr))
+  write(*,*) "Result: ", result  ! 34.0
+  
+  ! Case-insensitive functions
+  expr = "SIN(pi/2) + COS(0)"
+  result = fp_evaluate(trim(expr))
+  write(*,*) "Result: ", result  ! 2.0
+  
+  ! Scientific notation and special functions
+  expr = "gamma(5) * exp(-1E-3)"
+  result = fp_evaluate(trim(expr))
+  write(*,*) "Result: ", result  ! ~23.976
+  
+  ! Hyperbolic functions
+  expr = "SINH(1) + COSH(1)"
+  result = fp_evaluate(trim(expr))
+  write(*,*) "Result: ", result  ! e ≈ 2.718
 end program test_function_parser  
-
 ```
+
+## Implementation Notes
+
+### Case Sensitivity
+- **Function names are case-insensitive**: `SIN(x)`, `sin(x)`, and `Sin(x)` all work identically
+- **Variable names are case-sensitive**: `x` and `X` are treated as different variables
+- **Constant names are case-sensitive**: Use lowercase `pi`, `e`, `r` for the built-in constants
+
+### Division Operator
+Due to Fortran fixed-form syntax limitations with the `/` character, the division operator is internally represented as `div` token. This is handled automatically during tokenization and is transparent to the user.
+
+### Operator Precedence
+The library implements standard mathematical operator precedence:
+1. Functions (sin, cos, exp, etc.) - Highest precedence
+2. Exponentiation (`**`) - Right associative
+3. Unary operators (`+`, `-`)
+4. Multiplication and Division (`*`, `/`)
+5. Addition and Subtraction (`+`, `-`) - Lowest precedence
 ## License
 This project is licensed under the LGPL2.1 License. See the LICENSE file for details.
 ## Contributing
